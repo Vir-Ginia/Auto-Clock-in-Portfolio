@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events - Automatic Attendance Admin</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 20px;
+        background-color: #f8f9fa;
+      }
+      h1,
+      h2 {
+        color: #2c3e50;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #34495e;
+        color: white;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      .form-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+        max-width: 700px;
+      }
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #2ecc71;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #27ae60;
+      }
+      .back-link {
+        display: inline-block;
+        margin: 20px 0;
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+      }
+      .event-type-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .type-clock-in {
+        background-color: #27ae60;
+      }
+      .type-clock-out {
+        background-color: #e74c3c;
+      }
+      .type-grace-start {
+        background-color: #f39c12;
+      }
+      .type-grace-cancel {
+        background-color: #3498db;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Attendance Events</h1>
+
+    <a href="/sessions" class="back-link">← Back to Sessions</a>
+
+    <h2>Create New Event (For Testing)</h2>
+
+    <div class="form-container">
+      <form method="POST" action="/events">
+        <label for="session_id">Session</label>
+        <select id="session_id" name="session_id" required>
+          <option value="">-- Select Session --</option>
+          {% for session in sessions %}
+          <option value="{{ session.id }}">
+            {{ session.title }} ({{ session.start_time.strftime('%H:%M') }} - {{
+            session.end_time.strftime('%H:%M') }}) - {{ session.building.name if
+            session.building else 'No Building' }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <label for="type">Event Type</label>
+        <select id="type" name="type" required>
+          <option value="">-- Select Type --</option>
+          <option value="CLOCK_IN">CLOCK_IN</option>
+          <option value="CLOCK_OUT">CLOCK_OUT</option>
+          <option value="GRACE_START">GRACE_START</option>
+          <option value="GRACE_CANCEL">GRACE_CANCEL</option>
+        </select>
+
+        <label for="timestamp">Timestamp</label>
+        <input type="datetime-local" id="timestamp" name="timestamp" required />
+
+        <label for="reason">Reason</label>
+        <input
+          type="text"
+          id="reason"
+          name="reason"
+          required
+          placeholder="e.g., entered_geofence"
+        />
+
+        <button type="submit">Add Event</button>
+      </form>
+    </div>
+
+    <h2>Existing Events</h2>
+
+    {% if events %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Session</th>
+          <th>Type</th>
+          <th>Timestamp</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td>{{ event.id }}</td>
+          <td>
+            {% if event.session %} {{ event.session.title }} (ID: {{
+            event.session_id }}) {% else %}
+            <em>(Session not found)</em>
+            {% endif %}
+          </td>
+          <td>
+            <span
+              class="event-type-badge type-{{ event.type.lower().replace('_', '-') }}"
+            >
+              {{ event.type }}
+            </span>
+          </td>
+          <td>{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td>{{ event.reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p><em>No events created yet.</em></p>
+    {% endif %}
+  </body>
+</html>
